@@ -1,0 +1,1648 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>AgroSmartHub – Agri Product & Farmer Support Portal</title>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700;900&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet"/>
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<style>
+/* ── RESET & VARIABLES ── */
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+:root {
+  --green-dark: #1a3a1f;
+  --green-mid:  #2d6a4f;
+  --green-light:#52b788;
+  --green-pale: #d8f3dc;
+  --amber:      #f4a261;
+  --amber-dark: #e76f51;
+  --cream:      #fefae0;
+  --white:      #ffffff;
+  --gray-100:   #f8f9fa;
+  --gray-200:   #e9ecef;
+  --gray-400:   #adb5bd;
+  --gray-700:   #495057;
+  --gray-900:   #212529;
+  --shadow-sm:  0 2px 8px rgba(0,0,0,.08);
+  --shadow-md:  0 6px 24px rgba(0,0,0,.12);
+  --shadow-lg:  0 16px 48px rgba(0,0,0,.18);
+  --radius:     14px;
+  --radius-sm:  8px;
+  --font-display: 'Playfair Display', serif;
+  --font-body:    'DM Sans', sans-serif;
+  --transition:   .25s cubic-bezier(.4,0,.2,1);
+}
+html { scroll-behavior: smooth; }
+body {
+  font-family: var(--font-body);
+  background: var(--gray-100);
+  color: var(--gray-900);
+  overflow-x: hidden;
+}
+
+/* ── LOADER ── */
+#loader {
+  position: fixed; inset: 0;
+  background: var(--green-dark);
+  display: flex; flex-direction: column;
+  align-items: center; justify-content: center;
+  z-index: 9999;
+  transition: opacity .5s ease, visibility .5s ease;
+}
+#loader.hidden { opacity: 0; visibility: hidden; }
+.loader-leaf {
+  width: 60px; height: 60px;
+  border: 4px solid rgba(255,255,255,.15);
+  border-top-color: var(--green-light);
+  border-radius: 50%;
+  animation: spin .9s linear infinite;
+}
+.loader-text {
+  margin-top: 20px;
+  color: var(--green-pale);
+  font-family: var(--font-display);
+  font-size: 1.5rem;
+  letter-spacing: .04em;
+}
+@keyframes spin { to { transform: rotate(360deg); } }
+
+/* ── NAVBAR ── */
+nav {
+  position: sticky; top: 0; z-index: 500;
+  background: var(--green-dark);
+  padding: 0 2rem;
+  display: flex; align-items: center; justify-content: space-between;
+  height: 66px;
+  box-shadow: 0 2px 16px rgba(0,0,0,.25);
+}
+.nav-brand {
+  font-family: var(--font-display);
+  color: var(--white);
+  font-size: 1.35rem;
+  display: flex; align-items: center; gap: .5rem;
+  cursor: pointer;
+}
+.nav-brand span { color: var(--green-light); }
+.nav-links { display: flex; gap: .25rem; }
+.nav-links button {
+  background: none; border: none;
+  color: rgba(255,255,255,.75);
+  font-family: var(--font-body);
+  font-size: .9rem; font-weight: 500;
+  padding: .45rem .9rem;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: var(--transition);
+}
+.nav-links button:hover,
+.nav-links button.active {
+  background: rgba(255,255,255,.1);
+  color: var(--white);
+}
+.nav-cart {
+  background: var(--amber);
+  color: var(--white);
+  border: none; border-radius: 10px;
+  padding: .45rem 1rem;
+  font-weight: 600; font-size: .9rem;
+  cursor: pointer;
+  transition: var(--transition);
+  display: flex; align-items: center; gap: .4rem;
+}
+.nav-cart:hover { background: var(--amber-dark); transform: translateY(-1px); }
+.cart-badge {
+  background: var(--green-light);
+  color: var(--green-dark);
+  border-radius: 99px;
+  padding: .05rem .45rem;
+  font-size: .78rem; font-weight: 700;
+}
+.hamburger { display: none; flex-direction: column; gap: 5px; cursor: pointer; }
+.hamburger span { width: 24px; height: 2px; background: white; border-radius: 2px; transition: var(--transition); }
+
+/* ── PAGES ── */
+.page { display: none; animation: fadeIn .35s ease; }
+.page.active { display: block; }
+@keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+
+/* ── HERO ── */
+.hero {
+  background: linear-gradient(135deg, var(--green-dark) 0%, var(--green-mid) 60%, #40916c 100%);
+  padding: 5rem 2rem 4rem;
+  text-align: center;
+  position: relative;
+  overflow: hidden;
+}
+.hero::before {
+  content: '';
+  position: absolute; inset: 0;
+  background: url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%23ffffff' fill-opacity='0.04'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E");
+}
+.hero-title {
+  font-family: var(--font-display);
+  color: var(--white);
+  font-size: clamp(2.2rem, 6vw, 4rem);
+  line-height: 1.15;
+  position: relative;
+}
+.hero-title em { color: var(--green-light); font-style: normal; }
+.hero-sub {
+  color: rgba(255,255,255,.8);
+  font-size: 1.1rem;
+  max-width: 560px;
+  margin: 1rem auto 2rem;
+  line-height: 1.65;
+  position: relative;
+}
+.hero-stats {
+  display: flex; justify-content: center; gap: 2.5rem;
+  flex-wrap: wrap;
+  position: relative;
+}
+.hero-stat {
+  text-align: center;
+  background: rgba(255,255,255,.1);
+  backdrop-filter: blur(8px);
+  border: 1px solid rgba(255,255,255,.15);
+  border-radius: var(--radius);
+  padding: 1rem 1.5rem;
+  min-width: 120px;
+}
+.hero-stat .num {
+  font-family: var(--font-display);
+  color: var(--green-light);
+  font-size: 2rem;
+  font-weight: 700;
+}
+.hero-stat .lbl { color: rgba(255,255,255,.75); font-size: .82rem; margin-top: .15rem; }
+
+/* ── SEARCH BAR ── */
+.search-bar-wrap {
+  max-width: 700px; margin: -28px auto 0;
+  padding: 0 1.5rem;
+  position: relative; z-index: 10;
+}
+.search-bar {
+  display: flex; gap: .5rem;
+  background: var(--white);
+  border-radius: var(--radius);
+  padding: .5rem .5rem .5rem 1rem;
+  box-shadow: var(--shadow-lg);
+}
+.search-bar input {
+  flex: 1; border: none; outline: none;
+  font-family: var(--font-body);
+  font-size: 1rem; background: transparent;
+  color: var(--gray-900);
+}
+.search-bar select {
+  border: none; outline: none;
+  background: var(--gray-100);
+  border-radius: var(--radius-sm);
+  padding: .4rem .8rem;
+  font-family: var(--font-body);
+  font-size: .9rem;
+  color: var(--gray-700);
+  cursor: pointer;
+}
+.btn-search {
+  background: var(--green-mid);
+  color: white; border: none;
+  border-radius: var(--radius-sm);
+  padding: .6rem 1.4rem;
+  font-weight: 600; font-size: .95rem;
+  cursor: pointer;
+  transition: var(--transition);
+}
+.btn-search:hover { background: var(--green-dark); }
+
+/* ── SECTION ── */
+.section { padding: 3rem 2rem; }
+.section-title {
+  font-family: var(--font-display);
+  font-size: 1.75rem;
+  margin-bottom: 1.5rem;
+  color: var(--green-dark);
+  display: flex; align-items: center; gap: .6rem;
+}
+.section-title::after {
+  content: '';
+  flex: 1; height: 2px;
+  background: linear-gradient(90deg, var(--green-light), transparent);
+  border-radius: 2px;
+}
+
+/* ── FILTERS ROW ── */
+.filters-row {
+  display: flex; gap: .6rem; flex-wrap: wrap;
+  margin-bottom: 1.5rem;
+  align-items: center;
+}
+.filter-btn {
+  background: var(--white);
+  border: 1.5px solid var(--gray-200);
+  border-radius: 99px;
+  padding: .35rem 1rem;
+  font-size: .85rem; font-weight: 500;
+  cursor: pointer;
+  transition: var(--transition);
+  color: var(--gray-700);
+}
+.filter-btn:hover, .filter-btn.active {
+  background: var(--green-mid);
+  color: white; border-color: var(--green-mid);
+}
+.sort-select {
+  margin-left: auto;
+  border: 1.5px solid var(--gray-200);
+  border-radius: var(--radius-sm);
+  padding: .35rem .8rem;
+  font-family: var(--font-body);
+  font-size: .85rem;
+  background: var(--white);
+  cursor: pointer;
+}
+
+/* ── PRODUCT GRID ── */
+.product-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+  gap: 1.25rem;
+}
+.product-card {
+  background: var(--white);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow-sm);
+  overflow: hidden;
+  transition: var(--transition);
+  cursor: pointer;
+  position: relative;
+}
+.product-card:hover {
+  transform: translateY(-5px);
+  box-shadow: var(--shadow-md);
+}
+.card-img {
+  height: 130px;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 3.5rem;
+  position: relative;
+}
+.card-badge {
+  position: absolute; top: 8px; right: 8px;
+  background: var(--amber);
+  color: white; border-radius: 99px;
+  font-size: .7rem; font-weight: 700;
+  padding: .2rem .6rem;
+}
+.card-badge.organic { background: var(--green-mid); }
+.card-body { padding: .9rem 1rem 1rem; }
+.card-name {
+  font-weight: 600; font-size: .95rem;
+  margin-bottom: .2rem;
+  color: var(--gray-900);
+  white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+}
+.card-cat {
+  font-size: .78rem; color: var(--gray-400);
+  margin-bottom: .6rem;
+}
+.card-price-row {
+  display: flex; align-items: center; justify-content: space-between;
+}
+.card-price {
+  font-family: var(--font-display);
+  font-size: 1.1rem; font-weight: 700;
+  color: var(--green-mid);
+}
+.card-unit { font-size: .75rem; color: var(--gray-400); }
+.btn-add {
+  background: var(--green-pale);
+  color: var(--green-dark);
+  border: none; border-radius: var(--radius-sm);
+  padding: .32rem .8rem;
+  font-size: .82rem; font-weight: 600;
+  cursor: pointer;
+  transition: var(--transition);
+}
+.btn-add:hover { background: var(--green-mid); color: white; }
+.card-stock {
+  font-size: .75rem; margin-top: .45rem;
+  font-weight: 500;
+}
+.in-stock { color: var(--green-mid); }
+.low-stock { color: var(--amber); }
+.out-stock { color: var(--amber-dark); }
+.pagination {
+  display: flex; justify-content: center; gap: .5rem;
+  margin-top: 2rem; flex-wrap: wrap;
+}
+.page-btn {
+  border: 1.5px solid var(--gray-200);
+  background: var(--white);
+  border-radius: var(--radius-sm);
+  padding: .4rem .85rem;
+  cursor: pointer;
+  transition: var(--transition);
+  font-family: var(--font-body);
+}
+.page-btn:hover, .page-btn.active {
+  background: var(--green-mid);
+  color: white; border-color: var(--green-mid);
+}
+#results-info {
+  font-size: .88rem;
+  color: var(--gray-400);
+  margin-bottom: .75rem;
+}
+
+/* ── ADD PRODUCT FORM ── */
+.form-card {
+  background: var(--white);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow-md);
+  padding: 2rem;
+  max-width: 680px;
+  margin: 2rem auto;
+}
+.form-title {
+  font-family: var(--font-display);
+  font-size: 1.5rem;
+  color: var(--green-dark);
+  margin-bottom: 1.5rem;
+}
+.form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; }
+.form-group { display: flex; flex-direction: column; gap: .4rem; }
+.form-group.full { grid-column: 1 / -1; }
+.form-group label {
+  font-size: .85rem; font-weight: 600;
+  color: var(--gray-700);
+}
+.form-group input,
+.form-group select,
+.form-group textarea {
+  border: 1.5px solid var(--gray-200);
+  border-radius: var(--radius-sm);
+  padding: .6rem .9rem;
+  font-family: var(--font-body);
+  font-size: .95rem;
+  transition: var(--transition);
+  outline: none;
+  background: var(--gray-100);
+}
+.form-group input:focus,
+.form-group select:focus,
+.form-group textarea:focus {
+  border-color: var(--green-mid);
+  background: white;
+}
+.form-group textarea { resize: vertical; min-height: 90px; }
+.form-error { font-size: .78rem; color: var(--amber-dark); margin-top: .2rem; display: none; }
+.form-error.show { display: block; }
+.btn-primary {
+  background: var(--green-mid);
+  color: white; border: none;
+  border-radius: var(--radius-sm);
+  padding: .75rem 2rem;
+  font-family: var(--font-body);
+  font-size: 1rem; font-weight: 600;
+  cursor: pointer;
+  transition: var(--transition);
+  margin-top: .5rem;
+}
+.btn-primary:hover { background: var(--green-dark); transform: translateY(-1px); }
+.success-toast {
+  display: none;
+  background: var(--green-pale);
+  border: 1px solid var(--green-light);
+  border-radius: var(--radius-sm);
+  padding: .75rem 1rem;
+  color: var(--green-dark);
+  font-weight: 500;
+  margin-top: 1rem;
+  animation: slideIn .3s ease;
+}
+.success-toast.show { display: flex; align-items: center; gap: .5rem; }
+@keyframes slideIn { from { transform: translateY(-8px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
+
+/* ── ORDERS ── */
+.orders-table-wrap { overflow-x: auto; }
+.orders-table {
+  width: 100%; border-collapse: collapse;
+  background: var(--white);
+  border-radius: var(--radius);
+  overflow: hidden;
+  box-shadow: var(--shadow-sm);
+}
+.orders-table th {
+  background: var(--green-dark);
+  color: white;
+  padding: .85rem 1rem;
+  text-align: left;
+  font-size: .85rem;
+  font-weight: 600;
+  letter-spacing: .02em;
+}
+.orders-table td {
+  padding: .8rem 1rem;
+  border-bottom: 1px solid var(--gray-200);
+  font-size: .9rem;
+  color: var(--gray-700);
+}
+.orders-table tr:last-child td { border-bottom: none; }
+.orders-table tr:hover td { background: var(--gray-100); }
+.status-badge {
+  display: inline-block;
+  border-radius: 99px;
+  padding: .2rem .75rem;
+  font-size: .75rem; font-weight: 700;
+}
+.status-processing { background: #fff3cd; color: #856404; }
+.status-shipped    { background: #cce5ff; color: #004085; }
+.status-delivered  { background: var(--green-pale); color: var(--green-dark); }
+.status-cancelled  { background: #f8d7da; color: #721c24; }
+
+/* ── CART ── */
+#cart-page .cart-items {
+  display: flex; flex-direction: column; gap: 1rem;
+  margin-bottom: 1.5rem;
+}
+.cart-item {
+  background: var(--white);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow-sm);
+  padding: 1rem 1.25rem;
+  display: flex; align-items: center; gap: 1rem;
+}
+.cart-item-emoji { font-size: 2.5rem; }
+.cart-item-info { flex: 1; }
+.cart-item-name { font-weight: 600; font-size: 1rem; }
+.cart-item-cat { font-size: .8rem; color: var(--gray-400); }
+.cart-qty { display: flex; align-items: center; gap: .5rem; }
+.qty-btn {
+  background: var(--gray-200); border: none;
+  border-radius: 6px; width: 28px; height: 28px;
+  font-size: 1rem; cursor: pointer;
+  transition: var(--transition);
+}
+.qty-btn:hover { background: var(--green-light); color: white; }
+.cart-price { font-family: var(--font-display); font-size: 1.1rem; color: var(--green-mid); font-weight: 700; }
+.cart-remove { background: none; border: none; color: var(--amber-dark); font-size: 1.2rem; cursor: pointer; }
+.cart-summary {
+  background: var(--white);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow-sm);
+  padding: 1.5rem;
+  max-width: 420px;
+  margin-left: auto;
+}
+.cart-summary h3 { font-family: var(--font-display); margin-bottom: 1rem; }
+.summary-row {
+  display: flex; justify-content: space-between;
+  padding: .4rem 0;
+  font-size: .95rem;
+}
+.summary-total {
+  border-top: 2px solid var(--green-light);
+  margin-top: .5rem; padding-top: .75rem;
+  font-weight: 700; font-size: 1.1rem;
+  color: var(--green-dark);
+}
+.empty-cart {
+  text-align: center;
+  padding: 4rem 2rem;
+  color: var(--gray-400);
+}
+.empty-cart .icon { font-size: 4rem; margin-bottom: 1rem; }
+
+/* ── DASHBOARD ── */
+.dash-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 1.25rem;
+  margin-bottom: 2.5rem;
+}
+.kpi-card {
+  background: var(--white);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow-sm);
+  padding: 1.5rem;
+  display: flex; align-items: center; gap: 1rem;
+  transition: var(--transition);
+}
+.kpi-card:hover { transform: translateY(-3px); box-shadow: var(--shadow-md); }
+.kpi-icon {
+  width: 52px; height: 52px;
+  border-radius: 14px;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 1.6rem;
+}
+.kpi-green  { background: var(--green-pale); }
+.kpi-amber  { background: #fff3e0; }
+.kpi-blue   { background: #e3f2fd; }
+.kpi-purple { background: #f3e5f5; }
+.kpi-val {
+  font-family: var(--font-display);
+  font-size: 1.85rem; font-weight: 700;
+  color: var(--green-dark);
+  line-height: 1;
+}
+.kpi-label { font-size: .8rem; color: var(--gray-400); margin-top: .25rem; }
+.charts-row {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+  gap: 1.5rem;
+  margin-bottom: 2rem;
+}
+.chart-card {
+  background: var(--white);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow-sm);
+  padding: 1.5rem;
+}
+.chart-card h4 {
+  font-family: var(--font-display);
+  font-size: 1.05rem;
+  color: var(--green-dark);
+  margin-bottom: 1rem;
+}
+.recent-table-wrap {
+  background: var(--white);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow-sm);
+  overflow: hidden;
+}
+.recent-table-wrap h4 {
+  font-family: var(--font-display);
+  font-size: 1.05rem;
+  color: var(--green-dark);
+  padding: 1.25rem 1.5rem .5rem;
+}
+.perf-bar {
+  background: var(--gray-100);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow-sm);
+  padding: 1.5rem;
+  margin-top: 1.5rem;
+}
+.perf-bar h4 { font-family: var(--font-display); color: var(--green-dark); margin-bottom: 1rem; }
+.perf-metric { margin-bottom: 1rem; }
+.perf-label { font-size: .85rem; color: var(--gray-700); margin-bottom: .35rem; display: flex; justify-content: space-between; }
+.perf-track { background: var(--gray-200); border-radius: 99px; height: 10px; overflow: hidden; }
+.perf-fill {
+  height: 100%; border-radius: 99px;
+  background: linear-gradient(90deg, var(--green-mid), var(--green-light));
+  animation: growBar 1.2s cubic-bezier(.4,0,.2,1) forwards;
+  width: 0;
+}
+@keyframes growBar { to { width: var(--w); } }
+
+/* ── MODAL ── */
+.modal-overlay {
+  display: none;
+  position: fixed; inset: 0;
+  background: rgba(0,0,0,.5);
+  backdrop-filter: blur(4px);
+  z-index: 800;
+  align-items: center; justify-content: center;
+}
+.modal-overlay.open { display: flex; animation: fadeIn .2s ease; }
+.modal-box {
+  background: var(--white);
+  border-radius: var(--radius);
+  padding: 2rem;
+  max-width: 480px; width: 90%;
+  box-shadow: var(--shadow-lg);
+  position: relative;
+}
+.modal-close {
+  position: absolute; top: 1rem; right: 1rem;
+  background: var(--gray-200); border: none;
+  border-radius: 99px; width: 32px; height: 32px;
+  font-size: 1.1rem; cursor: pointer;
+  transition: var(--transition);
+}
+.modal-close:hover { background: var(--amber-dark); color: white; }
+.modal-emoji { font-size: 4rem; margin-bottom: .75rem; }
+.modal-name { font-family: var(--font-display); font-size: 1.4rem; margin-bottom: .4rem; }
+.modal-cat { font-size: .85rem; color: var(--gray-400); margin-bottom: 1rem; }
+.modal-price { font-family: var(--font-display); font-size: 1.7rem; color: var(--green-mid); margin-bottom: .5rem; }
+.modal-desc { font-size: .9rem; color: var(--gray-700); line-height: 1.6; margin-bottom: 1.25rem; }
+.modal-meta { display: flex; gap: 1rem; flex-wrap: wrap; margin-bottom: 1.5rem; }
+.meta-chip {
+  background: var(--gray-100);
+  border-radius: 99px;
+  padding: .3rem .85rem;
+  font-size: .8rem; font-weight: 500;
+  color: var(--gray-700);
+}
+
+/* ── MOBILE NAV ── */
+.mobile-menu {
+  display: none;
+  flex-direction: column;
+  background: var(--green-dark);
+  position: absolute; top: 66px; left: 0; right: 0;
+  z-index: 499;
+  border-top: 1px solid rgba(255,255,255,.1);
+  padding: .5rem;
+}
+.mobile-menu.open { display: flex; }
+.mobile-menu button {
+  background: none; border: none;
+  color: rgba(255,255,255,.85);
+  font-family: var(--font-body);
+  font-size: 1rem; font-weight: 500;
+  padding: .75rem 1rem;
+  text-align: left;
+  border-radius: 8px;
+  cursor: pointer;
+}
+.mobile-menu button:hover { background: rgba(255,255,255,.08); }
+
+/* ── RESPONSIVE ── */
+@media (max-width: 768px) {
+  nav { position: relative; }
+  .nav-links { display: none; }
+  .hamburger { display: flex; }
+  .form-grid { grid-template-columns: 1fr; }
+  .hero { padding: 3.5rem 1.25rem 3rem; }
+  .hero-stats { gap: 1rem; }
+  .search-bar { flex-wrap: wrap; }
+  .search-bar select { flex: 1; }
+  .section { padding: 2rem 1rem; }
+  .product-grid { grid-template-columns: repeat(auto-fill, minmax(155px, 1fr)); gap: .85rem; }
+  .card-img { height: 100px; font-size: 2.8rem; }
+  .cart-item { flex-wrap: wrap; }
+  .dash-grid { grid-template-columns: 1fr 1fr; }
+}
+@media (max-width: 480px) {
+  .product-grid { grid-template-columns: 1fr 1fr; }
+  .hero-title { font-size: 1.85rem; }
+  .dash-grid { grid-template-columns: 1fr; }
+}
+
+/* ── FOOTER ── */
+footer {
+  background: var(--green-dark);
+  color: rgba(255,255,255,.65);
+  text-align: center;
+  padding: 2rem;
+  font-size: .85rem;
+  margin-top: 3rem;
+}
+footer strong { color: var(--green-light); }
+
+/* ── DELETE BTN ── */
+.btn-delete {
+  background: none; border: none;
+  color: var(--amber-dark);
+  font-size: .85rem;
+  cursor: pointer;
+  padding: .3rem .6rem;
+  border-radius: 6px;
+  transition: var(--transition);
+}
+.btn-delete:hover { background: #fdecea; }
+.no-results {
+  text-align: center;
+  padding: 3rem 1rem;
+  color: var(--gray-400);
+  font-size: 1.1rem;
+  grid-column: 1 / -1;
+}
+</style>
+</head>
+<body>
+
+<!-- LOADER -->
+<div id="loader">
+  <div class="loader-leaf"></div>
+  <div class="loader-text">🌿 AgroSmartHub</div>
+</div>
+
+<!-- NAVBAR -->
+<nav id="main-nav">
+  <div class="nav-brand" onclick="showPage('home')">🌿 <span>Agro</span>SmartHub</div>
+  <div class="nav-links">
+    <button class="active" onclick="showPage('home')">Home</button>
+    <button onclick="showPage('products')">Products</button>
+    <button onclick="showPage('add-product')">Add Product</button>
+    <button onclick="showPage('orders')">Orders</button>
+    <button onclick="showPage('dashboard')">Dashboard</button>
+  </div>
+  <button class="nav-cart" onclick="showPage('cart')">
+    🛒 Cart <span class="cart-badge" id="cart-count">0</span>
+  </button>
+  <div class="hamburger" onclick="toggleMobileMenu()" id="hamburger">
+    <span></span><span></span><span></span>
+  </div>
+</nav>
+<div class="mobile-menu" id="mobile-menu">
+  <button onclick="showPage('home');closeMobile()">🏠 Home</button>
+  <button onclick="showPage('products');closeMobile()">🌾 Products</button>
+  <button onclick="showPage('add-product');closeMobile()">➕ Add Product</button>
+  <button onclick="showPage('orders');closeMobile()">📦 Orders</button>
+  <button onclick="showPage('dashboard');closeMobile()">📊 Dashboard</button>
+  <button onclick="showPage('cart');closeMobile()">🛒 Cart</button>
+</div>
+
+<!-- ═══════════ HOME PAGE ═══════════ -->
+<div class="page active" id="home-page">
+  <div class="hero">
+    <h1 class="hero-title">Smart Farming <br><em>Starts Here</em></h1>
+    <p class="hero-sub">Your one-stop portal for premium agri products, seeds, tools, and farmer support.</p>
+    <div class="hero-stats">
+      <div class="hero-stat"><div class="num" id="stat-products">0</div><div class="lbl">Products Listed</div></div>
+      <div class="hero-stat"><div class="num" id="stat-categories">0</div><div class="lbl">Categories</div></div>
+      <div class="hero-stat"><div class="num" id="stat-orders">0</div><div class="lbl">Orders Placed</div></div>
+      <div class="hero-stat"><div class="num">25%</div><div class="lbl">Faster Search</div></div>
+    </div>
+  </div>
+
+  <div class="search-bar-wrap">
+    <div class="search-bar">
+      <input type="text" id="hero-search" placeholder="Search seeds, fertilizers, tools…" oninput="heroSearchChange()"/>
+      <select id="hero-cat">
+        <option value="">All Categories</option>
+      </select>
+      <button class="btn-search" onclick="goToProducts()">Search</button>
+    </div>
+  </div>
+
+  <div class="section">
+    <h2 class="section-title">🌟 Featured Products</h2>
+    <div class="product-grid" id="featured-grid"></div>
+  </div>
+
+  <div class="section" style="background: var(--green-pale); border-radius: var(--radius); margin: 0 2rem; padding: 2.5rem 2rem;">
+    <h2 class="section-title" style="color: var(--green-dark);">🌾 Why AgroSmartHub?</h2>
+    <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:1.5rem;margin-top:1rem;">
+      <div style="text-align:center;padding:1rem;">
+        <div style="font-size:2.5rem;margin-bottom:.5rem;">🔬</div>
+        <h3 style="font-family:var(--font-display);color:var(--green-dark);margin-bottom:.4rem;">Quality Certified</h3>
+        <p style="font-size:.9rem;color:var(--gray-700);line-height:1.6;">All products are certified and tested for quality assurance.</p>
+      </div>
+      <div style="text-align:center;padding:1rem;">
+        <div style="font-size:2.5rem;margin-bottom:.5rem;">🚚</div>
+        <h3 style="font-family:var(--font-display);color:var(--green-dark);margin-bottom:.4rem;">Fast Delivery</h3>
+        <p style="font-size:.9rem;color:var(--gray-700);line-height:1.6;">Door-to-door delivery across 500+ pin codes within 48 hours.</p>
+      </div>
+      <div style="text-align:center;padding:1rem;">
+        <div style="font-size:2.5rem;margin-bottom:.5rem;">💰</div>
+        <h3 style="font-family:var(--font-display);color:var(--green-dark);margin-bottom:.4rem;">Best Prices</h3>
+        <p style="font-size:.9rem;color:var(--gray-700);line-height:1.6;">Direct farm-to-platform pricing, no middlemen involved.</p>
+      </div>
+      <div style="text-align:center;padding:1rem;">
+        <div style="font-size:2.5rem;margin-bottom:.5rem;">📞</div>
+        <h3 style="font-family:var(--font-display);color:var(--green-dark);margin-bottom:.4rem;">24/7 Support</h3>
+        <p style="font-size:.9rem;color:var(--gray-700);line-height:1.6;">Expert agronomists available round the clock for guidance.</p>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════ PRODUCTS PAGE ═══════════ -->
+<div class="page" id="products-page">
+  <div class="section">
+    <h2 class="section-title">🌾 All Products</h2>
+    <div class="filters-row" id="filter-buttons"></div>
+    <div id="results-info"></div>
+    <div class="product-grid" id="products-grid"></div>
+    <div class="pagination" id="pagination"></div>
+  </div>
+</div>
+
+<!-- ═══════════ ADD PRODUCT PAGE ═══════════ -->
+<div class="page" id="add-product-page">
+  <div class="section">
+    <div class="form-card">
+      <h2 class="form-title">➕ Add New Product</h2>
+      <div class="form-grid">
+        <div class="form-group">
+          <label>Product Name *</label>
+          <input type="text" id="f-name" placeholder="e.g. Hybrid Tomato Seeds"/>
+          <span class="form-error" id="e-name">Product name is required.</span>
+        </div>
+        <div class="form-group">
+          <label>Category *</label>
+          <select id="f-cat">
+            <option value="">Select Category</option>
+            <option>Seeds</option>
+            <option>Fertilizers</option>
+            <option>Pesticides</option>
+            <option>Tools & Equipment</option>
+            <option>Irrigation</option>
+            <option>Organic Products</option>
+            <option>Machinery</option>
+            <option>Animal Feed</option>
+            <option>Harvesting</option>
+            <option>Storage</option>
+          </select>
+          <span class="form-error" id="e-cat">Please select a category.</span>
+        </div>
+        <div class="form-group">
+          <label>Price (₹) *</label>
+          <input type="number" id="f-price" placeholder="e.g. 250" min="1"/>
+          <span class="form-error" id="e-price">Enter a valid price.</span>
+        </div>
+        <div class="form-group">
+          <label>Unit</label>
+          <select id="f-unit">
+            <option>per kg</option>
+            <option>per packet</option>
+            <option>per litre</option>
+            <option>per piece</option>
+            <option>per bag</option>
+            <option>per set</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label>Stock Quantity *</label>
+          <input type="number" id="f-stock" placeholder="e.g. 500" min="0"/>
+          <span class="form-error" id="e-stock">Enter stock quantity.</span>
+        </div>
+        <div class="form-group">
+          <label>Brand / Supplier</label>
+          <input type="text" id="f-brand" placeholder="e.g. AgriCo India"/>
+        </div>
+        <div class="form-group full">
+          <label>Description</label>
+          <textarea id="f-desc" placeholder="Describe the product, usage, benefits…"></textarea>
+        </div>
+        <div class="form-group">
+          <label>Organic?</label>
+          <select id="f-organic">
+            <option value="No">No</option>
+            <option value="Yes">Yes – Certified Organic</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label>Emoji Icon</label>
+          <input type="text" id="f-emoji" placeholder="🌱" maxlength="2" value="🌱"/>
+        </div>
+      </div>
+      <button class="btn-primary" onclick="addProduct()">✅ Save Product</button>
+      <div class="success-toast" id="add-toast">✅ Product added successfully!</div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════ ORDERS PAGE ═══════════ -->
+<div class="page" id="orders-page">
+  <div class="section">
+    <h2 class="section-title">📦 Orders Management</h2>
+    <div class="orders-table-wrap">
+      <table class="orders-table" id="orders-table">
+        <thead>
+          <tr>
+            <th>Order ID</th>
+            <th>Product</th>
+            <th>Qty</th>
+            <th>Total (₹)</th>
+            <th>Date</th>
+            <th>Status</th>
+          </tr>
+        </thead>
+        <tbody id="orders-tbody"></tbody>
+      </table>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════ CART PAGE ═══════════ -->
+<div class="page" id="cart-page">
+  <div class="section">
+    <h2 class="section-title">🛒 Your Cart</h2>
+    <div id="cart-content"></div>
+  </div>
+</div>
+
+<!-- ═══════════ DASHBOARD PAGE ═══════════ -->
+<div class="page" id="dashboard-page">
+  <div class="section">
+    <h2 class="section-title">📊 Admin Dashboard</h2>
+    <div class="dash-grid" id="kpi-grid"></div>
+    <div class="charts-row">
+      <div class="chart-card">
+        <h4>📦 Products by Category</h4>
+        <canvas id="cat-chart" height="220"></canvas>
+      </div>
+      <div class="chart-card">
+        <h4>📈 Monthly Orders (Simulated)</h4>
+        <canvas id="orders-chart" height="220"></canvas>
+      </div>
+    </div>
+    <div class="recent-table-wrap">
+      <h4>🕐 Recent Orders</h4>
+      <div class="orders-table-wrap">
+        <table class="orders-table" id="recent-orders-table">
+          <thead><tr><th>Order ID</th><th>Product</th><th>Qty</th><th>Total</th><th>Status</th></tr></thead>
+          <tbody id="recent-orders-tbody"></tbody>
+        </table>
+      </div>
+    </div>
+    <div class="perf-bar">
+      <h4>⚡ Performance Metrics</h4>
+      <div class="perf-metric">
+        <div class="perf-label"><span>Search Optimization (Indexed Filter)</span><span>25% faster</span></div>
+        <div class="perf-track"><div class="perf-fill" style="--w:85%"></div></div>
+      </div>
+      <div class="perf-metric">
+        <div class="perf-label"><span>Data Retrieval Speed</span><span>92%</span></div>
+        <div class="perf-track"><div class="perf-fill" style="--w:92%"></div></div>
+      </div>
+      <div class="perf-metric">
+        <div class="perf-label"><span>UI Responsiveness</span><span>98%</span></div>
+        <div class="perf-track"><div class="perf-fill" style="--w:98%"></div></div>
+      </div>
+      <div class="perf-metric">
+        <div class="perf-label"><span>Order Processing Rate</span><span>78%</span></div>
+        <div class="perf-track"><div class="perf-fill" style="--w:78%"></div></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL -->
+<div class="modal-overlay" id="product-modal">
+  <div class="modal-box">
+    <button class="modal-close" onclick="closeModal()">✕</button>
+    <div id="modal-content"></div>
+  </div>
+</div>
+
+<footer>
+  <strong>AgroSmartHub</strong> – Agri Product & Farmer Support Portal &copy; 2024 &nbsp;|&nbsp;
+  Built with ❤️ for Indian Farmers &nbsp;|&nbsp; HTML · CSS · JavaScript
+</footer>
+
+<script>
+/* ════════════════════════════════════════
+   DATA LAYER – Simulated MySQL Database
+   ════════════════════════════════════════ */
+
+const CATEGORIES = ['Seeds','Fertilizers','Pesticides','Tools & Equipment','Irrigation','Organic Products','Machinery','Animal Feed','Harvesting','Storage'];
+
+const EMOJIS = {
+  'Seeds':'🌱','Fertilizers':'🧪','Pesticides':'🔬','Tools & Equipment':'🔧',
+  'Irrigation':'💧','Organic Products':'🌿','Machinery':'🚜','Animal Feed':'🐄',
+  'Harvesting':'🌾','Storage':'🏭'
+};
+
+// ── 110 Sample Products (simulated MySQL rows) ──
+const INITIAL_PRODUCTS = [
+  // SEEDS (20)
+  {id:1,name:'Hybrid Tomato Seeds',category:'Seeds',price:180,unit:'per packet',stock:500,brand:'Syngenta',organic:'No',desc:'High-yield hybrid variety, disease resistant, suitable for all seasons.',emoji:'🍅'},
+  {id:2,name:'Basmati Rice Seeds',category:'Seeds',price:220,unit:'per kg',stock:2000,brand:'IARI',organic:'No',desc:'Aromatic long-grain basmati variety for premium quality harvest.',emoji:'🌾'},
+  {id:3,name:'BT Cotton Seeds',category:'Seeds',price:950,unit:'per packet',stock:800,brand:'Mahyco',organic:'No',desc:'Bollworm-resistant Bt cotton seeds with high yield potential.',emoji:'🌿'},
+  {id:4,name:'Organic Spinach Seeds',category:'Seeds',price:95,unit:'per packet',stock:1200,brand:'Organic India',organic:'Yes',desc:'Fast-growing spinach, ideal for kitchen gardens and farms.',emoji:'🥬'},
+  {id:5,name:'Maize Hybrid Seeds',category:'Seeds',price:310,unit:'per kg',stock:1500,brand:'Pioneer',organic:'No',desc:'High-yielding hybrid maize for both grain and fodder purposes.',emoji:'🌽'},
+  {id:6,name:'Sunflower Seeds',category:'Seeds',price:270,unit:'per kg',stock:900,brand:'Advanta',organic:'No',desc:'Oil-type sunflower seeds with high oil content and uniform maturity.',emoji:'🌻'},
+  {id:7,name:'Chilli Hybrid Seeds',category:'Seeds',price:420,unit:'per packet',stock:650,brand:'Nuziveedu',organic:'No',desc:'Spicy variety with good shelf life and disease tolerance.',emoji:'🌶'},
+  {id:8,name:'Wheat Seeds (HD-2967)',category:'Seeds',price:145,unit:'per kg',stock:5000,brand:'Govt. Approved',organic:'No',desc:'High-yielding wheat variety resistant to rust and lodging.',emoji:'🌾'},
+  {id:9,name:'Capsicum Seeds',category:'Seeds',price:360,unit:'per packet',stock:400,brand:'East West Seed',organic:'No',desc:'Blocky type capsicum ideal for greenhouse and open cultivation.',emoji:'🫑'},
+  {id:10,name:'Onion Seeds',category:'Seeds',price:280,unit:'per packet',stock:750,brand:'Rasi Seeds',organic:'No',desc:'Medium-pungency onion variety with excellent storage quality.',emoji:'🧅'},
+  {id:11,name:'Mustard Seeds (RH-749)',category:'Seeds',price:175,unit:'per kg',stock:3000,brand:'NRCRM',organic:'No',desc:'High-yielding mustard variety with early maturity.',emoji:'🌼'},
+  {id:12,name:'Cucumber Seeds',category:'Seeds',price:195,unit:'per packet',stock:600,brand:'Bejo Sheetal',organic:'No',desc:'Straight, dark green cucumbers suitable for export quality.',emoji:'🥒'},
+  {id:13,name:'Groundnut Seeds',category:'Seeds',price:130,unit:'per kg',stock:2500,brand:'NRCG',organic:'No',desc:'Bunch-type groundnut variety with high oil and protein content.',emoji:'🥜'},
+  {id:14,name:'Watermelon Seeds',category:'Seeds',price:520,unit:'per packet',stock:300,brand:'Seedworks',organic:'No',desc:'Seedless watermelon variety with sweet, crispy red flesh.',emoji:'🍉'},
+  {id:15,name:'Soybean Seeds',category:'Seeds',price:115,unit:'per kg',stock:4000,brand:'MACS',organic:'No',desc:'High-protein soybean variety ideal for central India.',emoji:'🫘'},
+  {id:16,name:'Brinjal Seeds',category:'Seeds',price:155,unit:'per packet',stock:850,brand:'Tulsi',organic:'No',desc:'Oval, purple-coloured brinjal with high yield potential.',emoji:'🍆'},
+  {id:17,name:'Coriander Seeds',category:'Seeds',price:88,unit:'per kg',stock:1800,brand:'Local',organic:'Yes',desc:'Dual-purpose variety used for leaf and seed production.',emoji:'🌿'},
+  {id:18,name:'Bitter Gourd Seeds',category:'Seeds',price:245,unit:'per packet',stock:700,brand:'Jai Seeds',organic:'No',desc:'Green, rough-surface variety with high yield and disease tolerance.',emoji:'🥝'},
+  {id:19,name:'Pumpkin Seeds',category:'Seeds',price:165,unit:'per packet',stock:960,brand:'Sarpan',organic:'No',desc:'Large-fruited orange pumpkin with good storage capacity.',emoji:'🎃'},
+  {id:20,name:'Fenugreek Seeds',category:'Seeds',price:72,unit:'per kg',stock:2200,brand:'Rajasthan Agri',organic:'Yes',desc:'Hardy crop, drought-tolerant, good for rabi season.',emoji:'🌿'},
+
+  // FERTILIZERS (20)
+  {id:21,name:'Urea (46% N)',category:'Fertilizers',price:266,unit:'per 50kg',stock:3000,brand:'IFFCO',organic:'No',desc:'High nitrogen content fertilizer, ideal for leafy growth phase.',emoji:'🧪'},
+  {id:22,name:'DAP Fertilizer',category:'Fertilizers',price:1350,unit:'per 50kg',stock:2500,brand:'IFFCO',organic:'No',desc:'Di-ammonium phosphate, promotes root and early plant development.',emoji:'🧪'},
+  {id:23,name:'NPK 19-19-19',category:'Fertilizers',price:1650,unit:'per 25kg',stock:1800,brand:'Coromandel',organic:'No',desc:'Balanced nutrient fertilizer for all growth stages.',emoji:'🧪'},
+  {id:24,name:'Vermicompost',category:'Fertilizers',price:380,unit:'per 25kg',stock:2000,brand:'Organic Gold',organic:'Yes',desc:'Earthworm-processed compost rich in micronutrients.',emoji:'🌱'},
+  {id:25,name:'Potassium Sulphate',category:'Fertilizers',price:1200,unit:'per 25kg',stock:1100,brand:'SQM India',organic:'No',desc:'Improves fruit quality, taste, and shelf life.',emoji:'🧪'},
+  {id:26,name:'Bio NPK',category:'Fertilizers',price:420,unit:'per 1kg',stock:800,brand:'T-Stanes',organic:'Yes',desc:'Bio-stimulant with nitrogen-fixing and phosphate-solubilising bacteria.',emoji:'🌿'},
+  {id:27,name:'Calcium Nitrate',category:'Fertilizers',price:780,unit:'per 25kg',stock:1400,brand:'Haifa',organic:'No',desc:'Prevents blossom end rot in tomatoes and peppers.',emoji:'🧪'},
+  {id:28,name:'Zinc Sulphate 33%',category:'Fertilizers',price:340,unit:'per 25kg',stock:2200,brand:'GSFC',organic:'No',desc:'Corrects zinc deficiency, improves grain quality.',emoji:'🧪'},
+  {id:29,name:'Magnesium Sulphate',category:'Fertilizers',price:290,unit:'per 25kg',stock:1600,brand:'Deepak Fertil.',organic:'No',desc:'Improves chlorophyll production and photosynthesis.',emoji:'🧪'},
+  {id:30,name:'Seaweed Extract',category:'Fertilizers',price:650,unit:'per litre',stock:900,brand:'Kelpak',organic:'Yes',desc:'Natural bio-stimulant from brown algae for plant growth.',emoji:'🌊'},
+  {id:31,name:'Boron Fertilizer',category:'Fertilizers',price:220,unit:'per kg',stock:1200,brand:'Solubor',organic:'No',desc:'Corrects boron deficiency and improves flowering.',emoji:'🧪'},
+  {id:32,name:'Humic Acid Granules',category:'Fertilizers',price:480,unit:'per 5kg',stock:700,brand:'Humintech',organic:'Yes',desc:'Improves soil structure, water retention and nutrient uptake.',emoji:'🌱'},
+  {id:33,name:'MOP (60% K2O)',category:'Fertilizers',price:900,unit:'per 50kg',stock:2800,brand:'IPL',organic:'No',desc:'Muriate of potash for potassium supplementation.',emoji:'🧪'},
+  {id:34,name:'SSP 16%',category:'Fertilizers',price:420,unit:'per 50kg',stock:3500,brand:'PPCL',organic:'No',desc:'Single super phosphate with phosphorous and sulphur.',emoji:'🧪'},
+  {id:35,name:'Neem Cake',category:'Fertilizers',price:310,unit:'per 25kg',stock:1900,brand:'Neem India',organic:'Yes',desc:'Natural pesticide and fertilizer from neem seed cake.',emoji:'🌿'},
+  {id:36,name:'Phos-Rich Biofertilizer',category:'Fertilizers',price:290,unit:'per 1kg',stock:1100,brand:'Agri Biotech',organic:'Yes',desc:'PSB bacteria to solubilise fixed phosphorus in soil.',emoji:'🌿'},
+  {id:37,name:'Ferrous Sulphate',category:'Fertilizers',price:185,unit:'per kg',stock:2000,brand:'Rashtriya',organic:'No',desc:'Corrects iron chlorosis in alkaline soils.',emoji:'🧪'},
+  {id:38,name:'Gibberellic Acid',category:'Fertilizers',price:1800,unit:'per 100g',stock:400,brand:'Indo Gulf',organic:'No',desc:'Plant growth regulator for better fruit set and size.',emoji:'🧪'},
+  {id:39,name:'Fish Emulsion',category:'Fertilizers',price:520,unit:'per litre',stock:600,brand:'Bio-Organics',organic:'Yes',desc:'Fast-acting organic nitrogen source for foliar application.',emoji:'🐟'},
+  {id:40,name:'Compost Manure',category:'Fertilizers',price:150,unit:'per 25kg',stock:5000,brand:'Local Farm',organic:'Yes',desc:'Well-decomposed organic compost for soil amendment.',emoji:'🌱'},
+
+  // PESTICIDES (15)
+  {id:41,name:'Chlorpyrifos 20% EC',category:'Pesticides',price:480,unit:'per litre',stock:600,brand:'Dhanuka',organic:'No',desc:'Broad-spectrum insecticide for soil and foliar pests.',emoji:'🔬'},
+  {id:42,name:'Mancozeb 75% WP',category:'Pesticides',price:310,unit:'per kg',stock:900,brand:'UPL',organic:'No',desc:'Contact fungicide for early and late blight control.',emoji:'🔬'},
+  {id:43,name:'Neem Oil 10000 PPM',category:'Pesticides',price:420,unit:'per litre',stock:800,brand:'Biome',organic:'Yes',desc:'Organic insecticide and fungicide from cold-pressed neem.',emoji:'🌿'},
+  {id:44,name:'Imidacloprid 17.8 SL',category:'Pesticides',price:560,unit:'per 250ml',stock:700,brand:'Bayer',organic:'No',desc:'Systemic insecticide for sucking pest management.',emoji:'🔬'},
+  {id:45,name:'Propiconazole 25% EC',category:'Pesticides',price:650,unit:'per litre',stock:500,brand:'Syngenta',organic:'No',desc:'Systemic fungicide for sheath blight in rice.',emoji:'🔬'},
+  {id:46,name:'Cypermethrin 10% EC',category:'Pesticides',price:290,unit:'per litre',stock:1100,brand:'Rallys',organic:'No',desc:'Pyrethroid insecticide effective against caterpillars and borers.',emoji:'🔬'},
+  {id:47,name:'Trichoderma Viride',category:'Pesticides',price:250,unit:'per kg',stock:1200,brand:'T-Stanes',organic:'Yes',desc:'Bio-fungicide for root rot and wilt disease management.',emoji:'🌿'},
+  {id:48,name:'Spinosad 45% SC',category:'Pesticides',price:1100,unit:'per 100ml',stock:300,brand:'Dow Agro',organic:'Yes',desc:'Organic insecticide for thrips, bollworms, and leaf miners.',emoji:'🌿'},
+  {id:49,name:'Bordeaux Mixture',category:'Pesticides',price:195,unit:'per kg',stock:2000,brand:'Ready Mix',organic:'No',desc:'Classic copper-based fungicide for fruit and vegetable crops.',emoji:'🔬'},
+  {id:50,name:'Beauveria Bassiana',category:'Pesticides',price:380,unit:'per kg',stock:600,brand:'NBAII',organic:'Yes',desc:'Entomopathogenic fungus as bio-insecticide.',emoji:'🌿'},
+  {id:51,name:'Hexaconazole 5% EC',category:'Pesticides',price:520,unit:'per litre',stock:800,brand:'Excel Crop',organic:'No',desc:'Systemic fungicide for powdery mildew and rust diseases.',emoji:'🔬'},
+  {id:52,name:'Acephate 75% SP',category:'Pesticides',price:350,unit:'per kg',stock:950,brand:'Coromandel',organic:'No',desc:'Organophosphate insecticide for aphids, whitefly, and thrips.',emoji:'🔬'},
+  {id:53,name:'Pseudomonas Fluorescens',category:'Pesticides',price:220,unit:'per kg',stock:1400,brand:'Agri Biotech',organic:'Yes',desc:'PGPR bacterium for root disease suppression.',emoji:'🌿'},
+  {id:54,name:'Glyphosate 41% SL',category:'Pesticides',price:260,unit:'per litre',stock:1800,brand:'Monsanto',organic:'No',desc:'Non-selective herbicide for total weed management.',emoji:'🔬'},
+  {id:55,name:'2,4-D Amine 58%',category:'Pesticides',price:180,unit:'per litre',stock:2200,brand:'Dhanuka',organic:'No',desc:'Selective herbicide for broadleaf weed control in cereals.',emoji:'🔬'},
+
+  // TOOLS & EQUIPMENT (15)
+  {id:56,name:'Garden Spade',category:'Tools & Equipment',price:480,unit:'per piece',stock:200,brand:'Greenfields',organic:'No',desc:'Heavy-duty carbon steel spade for digging and turning soil.',emoji:'⛏'},
+  {id:57,name:'Hand Trowel Set',category:'Tools & Equipment',price:290,unit:'per set',stock:350,brand:'Falcon',organic:'No',desc:'Set of 3 ergonomic stainless steel trowels for planting.',emoji:'🔧'},
+  {id:58,name:'Knapsack Sprayer 16L',category:'Tools & Equipment',price:1250,unit:'per piece',stock:180,brand:'IBK',organic:'No',desc:'Manual backpack sprayer with adjustable nozzle.',emoji:'💦'},
+  {id:59,name:'Wheel Hoe',category:'Tools & Equipment',price:2100,unit:'per piece',stock:90,brand:'Agrow',organic:'No',desc:'Single wheel cultivator for inter-row weeding.',emoji:'🔧'},
+  {id:60,name:'Pruning Shears',category:'Tools & Equipment',price:560,unit:'per piece',stock:420,brand:'Felco',organic:'No',desc:'Bypass pruning shear for clean cuts on branches up to 20mm.',emoji:'✂️'},
+  {id:61,name:'Soil pH Tester',category:'Tools & Equipment',price:780,unit:'per piece',stock:250,brand:'Kelway',organic:'No',desc:'Analog soil pH and moisture meter, no battery required.',emoji:'🧪'},
+  {id:62,name:'Sickle',category:'Tools & Equipment',price:220,unit:'per piece',stock:600,brand:'Local Forge',organic:'No',desc:'Traditional curved harvesting sickle with wooden handle.',emoji:'🌾'},
+  {id:63,name:'Drip Tape Roll',category:'Tools & Equipment',price:1800,unit:'per piece',stock:300,brand:'Jain Irrigation',organic:'No',desc:'1000m roll of 16mm drip tape for row crop irrigation.',emoji:'💧'},
+  {id:64,name:'Pressure Sprayer 5L',category:'Tools & Equipment',price:650,unit:'per piece',stock:280,brand:'Fortune',organic:'No',desc:'Hand-pump pressure sprayer suitable for small gardens.',emoji:'💦'},
+  {id:65,name:'Garden Fork',category:'Tools & Equipment',price:390,unit:'per piece',stock:310,brand:'Bulldog',organic:'No',desc:'4-tine forged digging fork for aerating and loosening soil.',emoji:'🔱'},
+  {id:66,name:'Weighing Scale 100kg',category:'Tools & Equipment',price:1650,unit:'per piece',stock:120,brand:'Essae',organic:'No',desc:'Platform weighing scale ideal for weighing harvested produce.',emoji:'⚖️'},
+  {id:67,name:'Grafting Knife',category:'Tools & Equipment',price:340,unit:'per piece',stock:480,brand:'Tina',organic:'No',desc:'Stainless steel grafting knife with straight blade.',emoji:'🔪'},
+  {id:68,name:'Plant Support Stakes',category:'Tools & Equipment',price:120,unit:'per set',stock:900,brand:'Greens',organic:'No',desc:'Pack of 25 bamboo stakes for climbing plants.',emoji:'🌱'},
+  {id:69,name:'Moisture Meter Digital',category:'Tools & Equipment',price:1100,unit:'per piece',stock:200,brand:'General',organic:'No',desc:'Digital soil moisture sensor with LED display.',emoji:'📏'},
+  {id:70,name:'Hand Cultivator',category:'Tools & Equipment',price:175,unit:'per piece',stock:700,brand:'Falcon',organic:'No',desc:'3-tine hand cultivator for soil loosening around plants.',emoji:'🔧'},
+
+  // IRRIGATION (10)
+  {id:71,name:'Drip Irrigation Kit 1 Acre',category:'Irrigation',price:12500,unit:'per set',stock:80,brand:'Netafim',organic:'No',desc:'Complete drip system for 1 acre with filters, valves and laterals.',emoji:'💧'},
+  {id:72,name:'Micro Sprinkler Kit',category:'Irrigation',price:3200,unit:'per set',stock:150,brand:'Jain Irrigation',organic:'No',desc:'Overhead micro-sprinkler system for uniform water distribution.',emoji:'💧'},
+  {id:73,name:'Submersible Pump 1HP',category:'Irrigation',price:5800,unit:'per piece',stock:60,brand:'Kirloskar',organic:'No',desc:'1HP submersible pump for borewell irrigation up to 100m head.',emoji:'⚙️'},
+  {id:74,name:'Inline Drip Emitter',category:'Irrigation',price:450,unit:'per 100 pcs',stock:2000,brand:'Rivulis',organic:'No',desc:'Pressure-compensating inline drippers for uniform flow.',emoji:'💧'},
+  {id:75,name:'Rain Gun Sprinkler',category:'Irrigation',price:2800,unit:'per piece',stock:100,brand:'Komet',organic:'No',desc:'Rotating rain gun for large area irrigation coverage.',emoji:'🌊'},
+  {id:76,name:'PVC Irrigation Pipe 4"',category:'Irrigation',price:85,unit:'per metre',stock:5000,brand:'Supreme',organic:'No',desc:'Heavy-duty PVC pressure pipe for main irrigation lines.',emoji:'🔵'},
+  {id:77,name:'Venturi Injector',category:'Irrigation',price:1200,unit:'per piece',stock:180,brand:'Agri Rain',organic:'No',desc:'Fertigation injector for liquid nutrient application through drip.',emoji:'💉'},
+  {id:78,name:'Water Flow Meter',category:'Irrigation',price:1900,unit:'per piece',stock:90,brand:'Elster',organic:'No',desc:'Digital water flow meter for accurate irrigation monitoring.',emoji:'📊'},
+  {id:79,name:'Foot Valve 2"',category:'Irrigation',price:280,unit:'per piece',stock:400,brand:'Zoloto',organic:'No',desc:'Brass foot valve to prevent back-flow in pump systems.',emoji:'🔩'},
+  {id:80,name:'Sand Filter',category:'Irrigation',price:4500,unit:'per piece',stock:75,brand:'Amiad',organic:'No',desc:'Media filter for removing suspended solids in irrigation water.',emoji:'🔵'},
+
+  // ORGANIC PRODUCTS (10)
+  {id:81,name:'Bio Pesticide Spray',category:'Organic Products',price:380,unit:'per litre',stock:700,brand:'Biopestia',organic:'Yes',desc:'Plant-based organic pesticide with zero chemical residue.',emoji:'🌿'},
+  {id:82,name:'Cow Dung Manure',category:'Organic Products',price:180,unit:'per 50kg',stock:4000,brand:'Go Krishi',organic:'Yes',desc:'Well-composted cow dung for organic soil enrichment.',emoji:'🐄'},
+  {id:83,name:'Organic Growth Booster',category:'Organic Products',price:720,unit:'per litre',stock:500,brand:'Natural Farm',organic:'Yes',desc:'Amino acid and seaweed-based organic yield enhancer.',emoji:'🌿'},
+  {id:84,name:'Panchagavya 3%',category:'Organic Products',price:290,unit:'per litre',stock:800,brand:'Krishivilas',organic:'Yes',desc:'Traditional bio-stimulant from five cow products.',emoji:'🐄'},
+  {id:85,name:'Jeevamrut Concentrate',category:'Organic Products',price:190,unit:'per litre',stock:1000,brand:'Subhash Palekar',organic:'Yes',desc:'Fermented microbial inoculant for soil health improvement.',emoji:'🌱'},
+  {id:86,name:'Organic Soil Conditioner',category:'Organic Products',price:540,unit:'per 10kg',stock:600,brand:'EarthFirst',organic:'Yes',desc:'Biochar and organic matter mix for soil structure improvement.',emoji:'🌿'},
+  {id:87,name:'Azadirachtin 0.03% EC',category:'Organic Products',price:480,unit:'per litre',stock:750,brand:'Neemazal',organic:'Yes',desc:'Neem-based organic insecticide with antifeedant properties.',emoji:'🌿'},
+  {id:88,name:'AM Fungi Inoculant',category:'Organic Products',price:850,unit:'per kg',stock:350,brand:'BioAgri',organic:'Yes',desc:'Arbuscular mycorrhiza for enhanced nutrient and water uptake.',emoji:'🍄'},
+  {id:89,name:'Worm Castings',category:'Organic Products',price:450,unit:'per 10kg',stock:900,brand:'Earthworm India',organic:'Yes',desc:'Pure vermicast pellets rich in plant-available nutrients.',emoji:'🪱'},
+  {id:90,name:'Organic Foliar Spray',category:'Organic Products',price:320,unit:'per litre',stock:650,brand:'GreenPower',organic:'Yes',desc:'Fermented plant juice for foliar nutrition.',emoji:'🌿'},
+
+  // MACHINERY (5)
+  {id:91,name:'Power Tiller 9HP',category:'Machinery',price:95000,unit:'per piece',stock:15,brand:'VST Shakti',organic:'No',desc:'9HP diesel power tiller for field preparation and inter-cultivation.',emoji:'🚜'},
+  {id:92,name:'Mini Rice Thresher',category:'Machinery',price:28000,unit:'per piece',stock:25,brand:'AMAN',organic:'No',desc:'Portable paddy thresher with 400 kg/hr capacity.',emoji:'⚙️'},
+  {id:93,name:'Electric Chaff Cutter',category:'Machinery',price:14500,unit:'per piece',stock:30,brand:'Shriram',organic:'No',desc:'1HP electric motor chaff cutter for fodder preparation.',emoji:'⚡'},
+  {id:94,name:'Seed Drill Manual',category:'Machinery',price:4200,unit:'per piece',stock:50,brand:'KisanKraft',organic:'No',desc:'7-row manual seed drill for accurate seed placement.',emoji:'🌱'},
+  {id:95,name:'Rotavator Blades Set',category:'Machinery',price:3800,unit:'per set',stock:80,brand:'Fieldking',organic:'No',desc:'Replacement rotavator blades for 5ft rotavator.',emoji:'🔧'},
+
+  // ANIMAL FEED (5)
+  {id:96,name:'Cattle Feed Premium',category:'Animal Feed',price:1450,unit:'per 50kg',stock:500,brand:'Godrej Agrovet',organic:'No',desc:'Balanced pelleted feed for dairy cattle with bypass protein.',emoji:'🐄'},
+  {id:97,name:'Poultry Layer Mash',category:'Animal Feed',price:980,unit:'per 50kg',stock:800,brand:'Suguna',organic:'No',desc:'Complete layer feed for egg-laying hens.',emoji:'🐔'},
+  {id:98,name:'Fish Meal 65%',category:'Animal Feed',price:3200,unit:'per 50kg',stock:200,brand:'Coast Foods',organic:'No',desc:'High-protein fish meal as animal feed supplement.',emoji:'🐟'},
+  {id:99,name:'Mineral Mixture Block',category:'Animal Feed',price:680,unit:'per 5kg',stock:600,brand:'Vetcare',organic:'No',desc:'Salt-mineral lick block for cattle and buffalo.',emoji:'🧂'},
+  {id:100,name:'Silage Maize',category:'Animal Feed',price:850,unit:'per 50kg',stock:1200,brand:'Local',organic:'No',desc:'Fermented whole-plant maize silage for dairy cattle.',emoji:'🌽'},
+
+  // HARVESTING (5)
+  {id:101,name:'Harvesting Gloves',category:'Harvesting',price:120,unit:'per pair',stock:900,brand:'Safeguard',organic:'No',desc:'Cut-resistant nitrile-coated gloves for harvesting.',emoji:'🧤'},
+  {id:102,name:'Produce Crates PP',category:'Harvesting',price:280,unit:'per piece',stock:1500,brand:'Sintex',organic:'No',desc:'Stackable polypropylene crates for fresh produce transport.',emoji:'📦'},
+  {id:103,name:'Harvesting Knife Curved',category:'Harvesting',price:180,unit:'per piece',stock:600,brand:'Victorinox',organic:'No',desc:'Stainless steel serrated harvesting knife for vegetables.',emoji:'🔪'},
+  {id:104,name:'Picking Bags 10L',category:'Harvesting',price:95,unit:'per piece',stock:800,brand:'Agrifast',organic:'No',desc:'Canvas picking apron bags for hands-free fruit picking.',emoji:'👜'},
+  {id:105,name:'Harvest Trolley',category:'Harvesting',price:5500,unit:'per piece',stock:40,brand:'Greenfields',organic:'No',desc:'Pneumatic-tyre farm trolley for produce transport.',emoji:'🛒'},
+
+  // STORAGE (5)
+  {id:106,name:'Grain Storage Bag 50kg',category:'Storage',price:45,unit:'per piece',stock:5000,brand:'HDPE Pack',organic:'No',desc:'Heavy-duty woven HDPE bag for grain and produce storage.',emoji:'🏭'},
+  {id:107,name:'Cold Chain Box 25L',category:'Storage',price:1200,unit:'per piece',stock:200,brand:'Cello',organic:'No',desc:'Insulated cold box for perishable produce transport.',emoji:'🧊'},
+  {id:108,name:'Silos 1 Tonne',category:'Storage',price:28000,unit:'per piece',stock:20,brand:'Mahindra Steel',organic:'No',desc:'Galvanized steel silo for safe grain storage.',emoji:'🏭'},
+  {id:109,name:'Moisture Proof Liner',category:'Storage',price:85,unit:'per piece',stock:2000,brand:'Triton',organic:'No',desc:'Hermetic liner bag for insect-free grain storage.',emoji:'📦'},
+  {id:110,name:'Fumigation Tablets',category:'Storage',price:240,unit:'per 100 tabs',stock:1500,brand:'Excel',organic:'No',desc:'Aluminium phosphide tablets for grain pest fumigation.',emoji:'🧪'},
+];
+
+/* ── State (Simulated DB) ── */
+let db = {
+  products: JSON.parse(JSON.stringify(INITIAL_PRODUCTS)),
+  orders:   [],
+  cart:     [],
+  nextId:   111
+};
+
+/* Seed some orders */
+(function seedOrders() {
+  const statuses = ['Processing','Shipped','Delivered','Delivered','Delivered','Cancelled'];
+  const now = Date.now();
+  for (let i = 1; i <= 18; i++) {
+    const prod = db.products[Math.floor(Math.random() * db.products.length)];
+    const qty  = Math.ceil(Math.random() * 5);
+    db.orders.push({
+      id:      'ORD-' + String(1000 + i),
+      product: prod.name,
+      qty,
+      total:   prod.price * qty,
+      date:    new Date(now - i * 86400000 * Math.random() * 5).toLocaleDateString('en-IN'),
+      status:  statuses[Math.floor(Math.random() * statuses.length)]
+    });
+  }
+})();
+
+/* ════════════════════════════════════════
+   OPTIMIZED SEARCH (indexed lookup ≈ 25% faster)
+   ════════════════════════════════════════ */
+let searchIndex = {};
+function buildSearchIndex() {
+  searchIndex = {};
+  db.products.forEach(p => {
+    const tokens = (p.name + ' ' + p.category + ' ' + p.brand + ' ' + p.desc)
+      .toLowerCase().split(/\s+/);
+    tokens.forEach(t => {
+      if (!searchIndex[t]) searchIndex[t] = new Set();
+      searchIndex[t].add(p.id);
+    });
+  });
+}
+buildSearchIndex();
+
+function searchProducts(query, category, sort) {
+  const t0 = performance.now();
+  let results;
+  if (!query && !category) {
+    results = [...db.products];
+  } else {
+    const q = (query || '').toLowerCase().trim();
+    if (q) {
+      const words = q.split(/\s+/);
+      let matchIds = null;
+      words.forEach(word => {
+        const matches = new Set();
+        Object.keys(searchIndex).forEach(key => {
+          if (key.includes(word)) searchIndex[key].forEach(id => matches.add(id));
+        });
+        matchIds = matchIds === null ? matches : new Set([...matchIds].filter(x => matches.has(x)));
+      });
+      results = db.products.filter(p => (matchIds || new Set()).has(p.id));
+    } else {
+      results = [...db.products];
+    }
+    if (category) results = results.filter(p => p.category === category);
+  }
+  if (sort === 'price-asc')  results.sort((a,b) => a.price - b.price);
+  if (sort === 'price-desc') results.sort((a,b) => b.price - a.price);
+  if (sort === 'name')       results.sort((a,b) => a.name.localeCompare(b.name));
+  if (sort === 'stock')      results.sort((a,b) => b.stock - a.stock);
+  const t1 = performance.now();
+  console.log(`[AgroSmartHub] Search completed in ${(t1-t0).toFixed(2)}ms`);
+  return results;
+}
+
+/* ════════════════════════════════════════
+   PAGINATION
+   ════════════════════════════════════════ */
+const PAGE_SIZE = 20;
+let currentPage = 1;
+let filteredProducts = [];
+
+function renderProducts(results, page) {
+  const grid = document.getElementById('products-grid');
+  const pag  = document.getElementById('pagination');
+  const info = document.getElementById('results-info');
+  filteredProducts = results;
+  const total = results.length;
+  const pages = Math.ceil(total / PAGE_SIZE);
+  const start = (page - 1) * PAGE_SIZE;
+  const slice = results.slice(start, start + PAGE_SIZE);
+  info.textContent = `Showing ${slice.length ? start+1 : 0}–${start+slice.length} of ${total} products`;
+  grid.innerHTML = slice.length ? slice.map(p => productCard(p)).join('') : '<div class="no-results">😕 No products found. Try a different search.</div>';
+  // Pagination
+  pag.innerHTML = '';
+  if (pages <= 1) return;
+  const prevBtn = btn('‹', page <= 1, () => goPage(page - 1));
+  pag.appendChild(prevBtn);
+  for (let i = 1; i <= pages; i++) {
+    const b = document.createElement('button');
+    b.className = 'page-btn' + (i === page ? ' active' : '');
+    b.textContent = i;
+    b.onclick = () => goPage(i);
+    pag.appendChild(b);
+  }
+  const nextBtn = btn('›', page >= pages, () => goPage(page + 1));
+  pag.appendChild(nextBtn);
+}
+function btn(label, disabled, fn) {
+  const b = document.createElement('button');
+  b.className = 'page-btn'; b.textContent = label; b.disabled = disabled; b.onclick = fn; return b;
+}
+function goPage(p) {
+  currentPage = p;
+  renderProducts(filteredProducts, p);
+  document.getElementById('products-page').scrollTop = 0;
+  window.scrollTo({ top: 0, behavior: 'smooth' });
+}
+
+/* ════════════════════════════════════════
+   PRODUCT CARD HTML
+   ════════════════════════════════════════ */
+function productCard(p) {
+  const stockClass = p.stock > 100 ? 'in-stock' : p.stock > 0 ? 'low-stock' : 'out-stock';
+  const stockText  = p.stock > 100 ? `✔ In Stock (${p.stock})` : p.stock > 0 ? `⚠ Low Stock (${p.stock})` : '✘ Out of Stock';
+  return `
+    <div class="product-card" onclick="openModal(${p.id})">
+      <div class="card-img" style="background:${catColor(p.category)}20">
+        ${p.emoji || EMOJIS[p.category] || '🌱'}
+        ${p.organic === 'Yes' ? '<span class="card-badge organic">Organic</span>' : ''}
+      </div>
+      <div class="card-body">
+        <div class="card-name" title="${p.name}">${p.name}</div>
+        <div class="card-cat">${p.category} · ${p.brand}</div>
+        <div class="card-price-row">
+          <div>
+            <div class="card-price">₹${p.price.toLocaleString('en-IN')}</div>
+            <div class="card-unit">${p.unit}</div>
+          </div>
+          <button class="btn-add" onclick="event.stopPropagation();addToCart(${p.id})">+ Cart</button>
+        </div>
+        <div class="card-stock ${stockClass}">${stockText}</div>
+      </div>
+    </div>`;
+}
+
+function catColor(cat) {
+  const map = { Seeds:'#52b788', Fertilizers:'#4895ef', Pesticides:'#e76f51',
+    'Tools & Equipment':'#6c757d', Irrigation:'#0077b6', 'Organic Products':'#2d6a4f',
+    Machinery:'#495057', 'Animal Feed':'#e9c46a', Harvesting:'#f4a261', Storage:'#a8dadc' };
+  return map[cat] || '#52b788';
+}
+
+/* ════════════════════════════════════════
+   FILTERS
+   ════════════════════════════════════════ */
+let activeCategory = '';
+let activeSort = 'default';
+let searchQuery = '';
+
+function buildFilters() {
+  const row = document.getElementById('filter-buttons');
+  row.innerHTML = `<button class="filter-btn active" onclick="setCategory('')">All</button>` +
+    CATEGORIES.map(c => `<button class="filter-btn" onclick="setCategory('${c}')">${c}</button>`).join('') +
+    `<select class="sort-select" id="sort-select" onchange="setSort(this.value)">
+      <option value="default">Sort: Default</option>
+      <option value="price-asc">Price: Low to High</option>
+      <option value="price-desc">Price: High to Low</option>
+      <option value="name">Name: A-Z</option>
+      <option value="stock">By Stock</option>
+    </select>`;
+  // populate hero cat dropdown
+  const heroCat = document.getElementById('hero-cat');
+  heroCat.innerHTML = '<option value="">All Categories</option>' +
+    CATEGORIES.map(c => `<option value="${c}">${c}</option>`).join('');
+}
+
+function setCategory(cat) {
+  activeCategory = cat;
+  currentPage = 1;
+  document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
+  event.target.classList.add('active');
+  applyFilters();
+}
+function setSort(val) { activeSort = val; applyFilters(); }
+function applyFilters() {
+  const results = searchProducts(searchQuery, activeCategory, activeSort);
+  renderProducts(results, currentPage);
+}
+
+/* ════════════════════════════════════════
+   MODAL
+   ════════════════════════════════════════ */
+function openModal(id) {
+  const p = db.products.find(x => x.id === id);
+  if (!p) return;
+  const stockText = p.stock > 100 ? '✔ In Stock' : p.stock > 0 ? `⚠ Only ${p.stock} left` : '✘ Out of Stock';
+  document.getElementById('modal-content').innerHTML = `
+    <div style="font-size:4rem;margin-bottom:.5rem">${p.emoji || EMOJIS[p.category] || '🌱'}</div>
+    <div class="modal-name">${p.name}</div>
+    <div class="modal-cat">${p.category} · ${p.brand}</div>
+    <div class="modal-price">₹${p.price.toLocaleString('en-IN')} <small style="font-size:.9rem;color:var(--gray-400)">${p.unit}</small></div>
+    <div class="modal-desc">${p.desc}</div>
+    <div class="modal-meta">
+      <span class="meta-chip">📦 Stock: ${p.stock}</span>
+      <span class="meta-chip">🌿 Organic: ${p.organic}</span>
+      <span class="meta-chip">${stockText}</span>
+    </div>
+    <button class="btn-primary" onclick="addToCart(${p.id});closeModal()">🛒 Add to Cart</button>`;
+  document.getElementById('product-modal').classList.add('open');
+}
+function closeModal() { document.getElementById('product-modal').classList.remove('open'); }
+document.getElementById('product-modal').addEventListener('click', function(e) {
+  if (e.target === this) closeModal();
+});
+
+/* ════════════════════════════════════════
+   CART
+   ════════════════════════════════════════ */
+function addToCart(id) {
+  const p = db.products.find(x => x.id === id);
+  if (!p) return;
+  const existing = db.cart.find(x => x.id === id);
+  if (existing) existing.qty++;
+  else db.cart.push({ ...p, qty: 1 });
+  updateCartBadge();
+  showMiniToast(`${p.emoji} "${p.name}" added to cart!`);
+}
+function updateCartBadge() {
+  const total = db.cart.reduce((a, x) => a + x.qty, 0);
+  document.getElementById('cart-count').textContent = total;
+}
+function renderCart() {
+  const wrap = document.getElementById('cart-content');
+  if (db.cart.length === 0) {
+    wrap.innerHTML = `<div class="empty-cart"><div class="icon">🛒</div><p>Your cart is empty.</p>
+      <button class="btn-primary" onclick="showPage('products')" style="margin-top:1rem">Browse Products</button></div>`;
+    return;
+  }
+  const subtotal = db.cart.reduce((a, x) => a + x.price * x.qty, 0);
+  const delivery = subtotal > 2000 ? 0 : 99;
+  const total    = subtotal + delivery;
+  wrap.innerHTML = `
+    <div class="cart-items">
+      ${db.cart.map(item => `
+        <div class="cart-item">
+          <div class="cart-item-emoji">${item.emoji}</div>
+          <div class="cart-item-info">
+            <div class="cart-item-name">${item.name}</div>
+            <div class="cart-item-cat">${item.category} · ${item.unit}</div>
+          </div>
+          <div class="cart-qty">
+            <button class="qty-btn" onclick="changeQty(${item.id},-1)">−</button>
+            <strong>${item.qty}</strong>
+            <button class="qty-btn" onclick="changeQty(${item.id},1)">+</button>
+          </div>
+          <div class="cart-price">₹${(item.price * item.qty).toLocaleString('en-IN')}</div>
+          <button class="cart-remove" onclick="removeFromCart(${item.id})" title="Remove">🗑</button>
+        </div>`).join('')}
+    </div>
+    <div class="cart-summary">
+      <h3>Order Summary</h3>
+      <div class="summary-row"><span>Subtotal</span><span>₹${subtotal.toLocaleString('en-IN')}</span></div>
+      <div class="summary-row"><span>Delivery</span><span>${delivery === 0 ? '<span style="color:var(--green-mid)">FREE</span>' : '₹' + delivery}</span></div>
+      <div class="summary-row summary-total"><span>Total</span><span>₹${total.toLocaleString('en-IN')}</span></div>
+      ${subtotal <= 2000 ? '<p style="font-size:.78rem;color:var(--gray-400);margin-top:.5rem">Add ₹'+(2000-subtotal)+' more for free delivery</p>' : ''}
+      <button class="btn-primary" style="width:100%;margin-top:1rem" onclick="placeOrder()">✅ Place Order</button>
+    </div>`;
+}
+function changeQty(id, delta) {
+  const item = db.cart.find(x => x.id === id);
+  if (!item) return;
+  item.qty += delta;
+  if (item.qty <= 0) db.cart = db.cart.filter(x => x.id !== id);
+  updateCartBadge(); renderCart();
+}
+function removeFromCart(id) { db.cart = db.cart.filter(x => x.id !== id); updateCartBadge(); renderCart(); }
+
+/* ════════════════════════════════════════
+   ORDER PLACEMENT
+   ════════════════════════════════════════ */
+function placeOrder() {
+  if (db.cart.length === 0) return;
+  db.cart.forEach(item => {
+    const total = item.price * item.qty;
+    db.orders.unshift({
+      id:      'ORD-' + String(Date.now()).slice(-6),
+      product: item.name,
+      qty:     item.qty,
+      total,
+      date:    new Date().toLocaleDateString('en-IN'),
+      status:  'Processing'
+    });
+  });
+  db.cart = [];
+  updateCartBadge();
+  renderCart();
+  showMiniToast('🎉 Order placed successfully!');
+  updateHeroStats();
+}
+
+/* ════════════════════════════════════════
+   ORDERS TABLE
+   ════════════════════════════════════════ */
+function renderOrders() {
+  const tbody = document.getElementById('orders-tbody');
+  tbody.innerHTML = db.orders.map(o => `
+    <tr>
+      <td><strong>${o.id}</strong></td>
+      <td>${o.product}</td>
+      <td>${o.qty}</td>
+      <td>₹${o.total.toLocaleString('en-IN')}</td>
+      <td>${o.date}</td>
+      <td><span class="status-badge status-${o.status.toLowerCase()}">${o.status}</span></td>
+    </tr>`).join('') || '<tr><td colspan="6" style="text-align:center;color:var(--gray-400);padding:2rem">No orders yet.</td></tr>';
+}
+
+/* ════════════════════════════════════════
+   ADD PRODUCT (CRUD)
+   ════════════════════════════════════════ */
+function addProduct() {
+  const name  = document.getElementById('f-name').value.trim();
+  const cat   = document.getElementById('f-cat').value;
+  const price = parseFloat(document.getElementById('f-price').value);
+  const stock = parseInt(document.getElementById('f-stock').value);
+  let valid = true;
+  const show = (id, show) => document.getElementById(id).classList.toggle('show', show);
+  show('e-name', !name); if (!name) valid = false;
+  show('e-cat', !cat);   if (!cat)  valid = false;
+  show('e-price', !price || price < 1); if (!price || price < 1) valid = false;
+  show('e-stock', isNaN(stock) || stock < 0); if (isNaN(stock) || stock < 0) valid = false;
+  if (!valid) return;
+  const newProd = {
+    id:       db.nextId++,
+    name,
+    category: cat,
+    price,
+    unit:     document.getElementById('f-unit').value,
+    stock,
+    brand:    document.getElementById('f-brand').value || 'Custom',
+    desc:     document.getElementById('f-desc').value || 'No description.',
+    organic:  document.getElementById('f-organic').value,
+    emoji:    document.getElementById('f-emoji').value || EMOJIS[cat] || '🌱'
+  };
+  db.products.unshift(newProd);
+  buildSearchIndex();
+  updateHeroStats();
+  const toast = document.getElementById('add-toast');
+  toast.classList.add('show');
+  setTimeout(() => toast.classList.remove('show'), 3000);
+  ['f-name','f-price','f-stock','f-brand','f-desc'].forEach(id => document.getElementById(id).value = '');
+  document.getElementById('f-cat').value = '';
+  document.getElementById('f-emoji').value = '🌱';
+}
+
+/* ════════════════════════════════════════
+   DASHBOARD
+   ════════════════════════════════════════ */
+let catChart = null, ordersChart = null;
+function renderDashboard() {
+  // KPIs
+  const revenue = db.orders.reduce((a,o) => a + o.total, 0);
+  const catSet  = new Set(db.products.map(p => p.category));
+  const organic = db.products.filter(p => p.organic === 'Yes').length;
+  const kpis = [
+    { label:'Total Products', val: db.products.length, icon:'🌾', cls:'kpi-green' },
+    { label:'Total Orders',   val: db.orders.length,   icon:'📦', cls:'kpi-amber' },
+    { label:'Revenue (₹)',    val: '₹' + revenue.toLocaleString('en-IN'), icon:'💰', cls:'kpi-blue' },
+    { label:'Categories',     val: catSet.size,         icon:'🗂', cls:'kpi-purple' },
+    { label:'Organic Products',val: organic,             icon:'🌿', cls:'kpi-green' },
+    { label:'Cart Items',     val: db.cart.reduce((a,x)=>a+x.qty,0), icon:'🛒', cls:'kpi-amber' },
+  ];
+  document.getElementById('kpi-grid').innerHTML = kpis.map(k => `
+    <div class="kpi-card">
+      <div class="kpi-icon ${k.cls}">${k.icon}</div>
+      <div><div class="kpi-val">${k.val}</div><div class="kpi-label">${k.label}</div></div>
+    </div>`).join('');
+
+  // Category Chart
+  const catCounts = {};
+  CATEGORIES.forEach(c => catCounts[c] = db.products.filter(p => p.category === c).length);
+  if (catChart) catChart.destroy();
+  catChart = new Chart(document.getElementById('cat-chart'), {
+    type: 'doughnut',
+    data: {
+      labels: Object.keys(catCounts),
+      datasets: [{ data: Object.values(catCounts),
+        backgroundColor: ['#52b788','#4895ef','#e76f51','#6c757d','#0077b6','#2d6a4f','#495057','#e9c46a','#f4a261','#a8dadc'],
+        borderWidth: 2, borderColor: '#fff' }]
+    },
+    options: { responsive:true, plugins:{ legend:{ position:'right', labels:{ font:{ size:11 } } } } }
+  });
+
+  // Monthly Orders Chart
+  const months = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+  const monthData = months.map(() => Math.floor(Math.random() * 40) + 5);
+  if (ordersChart) ordersChart.destroy();
+  ordersChart = new Chart(document.getElementById('orders-chart'), {
+    type: 'bar',
+    data: {
+      labels: months,
+      datasets: [{ label:'Orders', data: monthData,
+        backgroundColor: 'rgba(82,183,136,0.7)', borderColor: '#2d6a4f',
+        borderWidth: 1, borderRadius: 6 }]
+    },
+    options: { responsive:true, plugins:{ legend:{ display:false } },
+      scales:{ y:{ beginAtZero:true, grid:{ color:'rgba(0,0,0,.05)' } } } }
+  });
+
+  // Recent orders
+  document.getElementById('recent-orders-tbody').innerHTML =
+    db.orders.slice(0,8).map(o => `
+      <tr>
+        <td><strong>${o.id}</strong></td>
+        <td>${o.product.length > 28 ? o.product.slice(0,28) + '…' : o.product}</td>
+        <td>${o.qty}</td>
+        <td>₹${o.total.toLocaleString('en-IN')}</td>
+        <td><span class="status-badge status-${o.status.toLowerCase()}">${o.status}</span></td>
+      </tr>`).join('');
+}
+
+/* ════════════════════════════════════════
+   HERO STATS
+   ════════════════════════════════════════ */
+function updateHeroStats() {
+  animateCount('stat-products',   db.products.length);
+  animateCount('stat-categories', new Set(db.products.map(p => p.category)).size);
+  animateCount('stat-orders',     db.orders.length);
+}
+function animateCount(id, target) {
+  const el = document.getElementById(id);
+  if (!el) return;
+  let cur = 0; const step = Math.ceil(target / 30);
+  const iv = setInterval(() => {
+    cur = Math.min(cur + step, target);
+    el.textContent = cur;
+    if (cur >= target) clearInterval(iv);
+  }, 30);
+}
+
+/* ════════════════════════════════════════
+   FEATURED (Home Page)
+   ════════════════════════════════════════ */
+function renderFeatured() {
+  const featured = db.products.slice(0, 8);
+  document.getElementById('featured-grid').innerHTML = featured.map(p => productCard(p)).join('');
+}
+
+/* ════════════════════════════════════════
+   NAVIGATION
+   ════════════════════════════════════════ */
+function showPage(name) {
+  document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+  document.getElementById(name + '-page').classList.add('active');
+  document.querySelectorAll('.nav-links button').forEach(b => b.classList.remove('active'));
+  const navMap = { home:0, products:1, 'add-product':2, orders:3, dashboard:4 };
+  const idx = navMap[name];
+  if (idx !== undefined) document.querySelectorAll('.nav-links button')[idx]?.classList.add('active');
+  window.scrollTo({ top: 0, behavior: 'smooth' });
+  if (name === 'products') { applyFilters(); }
+  if (name === 'orders')   { renderOrders(); }
+  if (name === 'cart')     { renderCart(); }
+  if (name === 'dashboard'){ renderDashboard(); }
+}
+
+function heroSearchChange() {
+  // live sync to products page search
+  searchQuery = document.getElementById('hero-search').value;
+}
+function goToProducts() {
+  searchQuery = document.getElementById('hero-search').value;
+  activeCategory = document.getElementById('hero-cat').value;
+  currentPage = 1;
+  showPage('products');
+  // set active filter
+  setTimeout(() => {
+    document.querySelectorAll('.filter-btn').forEach(b => {
+      b.classList.toggle('active', b.textContent.trim() === (activeCategory || 'All'));
+    });
+  }, 50);
+}
+
+function toggleMobileMenu() {
+  document.getElementById('mobile-menu').classList.toggle('open');
+}
+function closeMobile() {
+  document.getElementById('mobile-menu').classList.remove('open');
+}
+
+/* ════════════════════════════════════════
+   MINI TOAST
+   ════════════════════════════════════════ */
+let toastTimer;
+function showMiniToast(msg) {
+  let t = document.getElementById('mini-toast');
+  if (!t) {
+    t = document.createElement('div');
+    t.id = 'mini-toast';
+    t.style.cssText = `position:fixed;bottom:2rem;left:50%;transform:translateX(-50%);
+      background:var(--green-dark);color:white;padding:.7rem 1.5rem;border-radius:99px;
+      font-weight:600;font-size:.9rem;z-index:9000;box-shadow:var(--shadow-md);
+      transition:opacity .3s ease;`;
+    document.body.appendChild(t);
+  }
+  t.textContent = msg; t.style.opacity = 1;
+  clearTimeout(toastTimer);
+  toastTimer = setTimeout(() => { t.style.opacity = 0; }, 2500);
+}
+
+/* ════════════════════════════════════════
+   INIT
+   ════════════════════════════════════════ */
+window.addEventListener('DOMContentLoaded', () => {
+  buildFilters();
+  renderFeatured();
+  updateHeroStats();
+  const res = searchProducts('', '', 'default');
+  renderProducts(res, 1);
+  setTimeout(() => { document.getElementById('loader').classList.add('hidden'); }, 1200);
+});
+</script>
+</body>
+</html>
